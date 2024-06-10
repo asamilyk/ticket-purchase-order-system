@@ -1,0 +1,60 @@
+services:
+  authservice:
+    image: authservice:1.0
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/testdb
+      SPRING_DATASOURCE_USERNAME: testpguser
+      SPRING_DATASOURCE_PASSWORD: testpgpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_LIQUIBASE_ENABLED: true
+    depends_on:
+      - db
+    
+  ticketservice:
+    image: ticketservice:1.0
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-ticket:5432/testdb
+      SPRING_DATASOURCE_USERNAME: testpguser
+      SPRING_DATASOURCE_PASSWORD: testpgpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_LIQUIBASE_ENABLED: true
+    depends_on:
+      - db-ticket
+
+  db:
+    image: postgres:16.1-alpine3.18
+    environment:
+      POSTGRES_DB: "testdb"
+      POSTGRES_USER: "testpguser"
+      POSTGRES_PASSWORD: "testpgpass"
+    ports:
+      - "6432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testpguser -d testdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  db-ticket:
+    image: postgres:16.1-alpine3.18
+    environment:
+      POSTGRES_DB: "testdb"
+      POSTGRES_USER: "testpguser"
+      POSTGRES_PASSWORD: "testpgpass"
+    ports:
+      - "6433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U testpguser -d testdb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
